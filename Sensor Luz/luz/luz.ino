@@ -13,8 +13,6 @@ void loop(){
 
 void light_sensor(){ 
   int lightValue = analogRead(lightPin);
-  lightLevel = (lightValue / 1024.0) * 5.0; // Se calcula el voltage de luz
-  Serial.print("\nVoltage(V): ");
-  Serial.println(String(lightLevel, 2) + "V");
+  Serial.println(1024-lightValue);
   delay(globalDelay); 
 }
