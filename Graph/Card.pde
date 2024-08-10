@@ -1,14 +1,14 @@
 class Card {
     String title;
-    StringSupplier valueSupplier;
+    String valueSupplier;
     
-    Card(String title, StringSupplier valueSupplier) {
+    Card(String title, String valueSupplier) {
         this.title = title;
         this.valueSupplier = valueSupplier;
     }
     
     void draw(int x, int y, int width, int height) {
-        int padding = 20;
+        //int padding = 20;
         int borderRadius = 10;
         int marginLeft = 25;
         int marginTop = 25;
@@ -29,7 +29,7 @@ class Card {
             textAlign(LEFT);
             textFont(mediumFont);
             textSize(28);
-            text(valueSupplier.get(), x + marginLeft, y + height - marginBottom - 20);
+            text(valueSupplier, x + marginLeft, y + height - marginBottom - 20);
         }
     }
     

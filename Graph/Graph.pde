@@ -1,8 +1,13 @@
+import processing.serial.*;
+Serial myPort;
+
 int temperature = 0;
 int humidity = 0;
 int illumination = 0;
 int co2 = 0;
 int proximity = 0;
+String inputString = " ";
+float[] humidityValues = new float[50];  // Valores aleatorios de humedad
 
 color cardBackgroundColor = color(38, 38, 41);
 color titleColor = color(104, 104, 104);
@@ -15,26 +20,25 @@ PFont boldFont;
 PFont mediumFont;
 
 Card[] cards;
-float[] humidityValues = new float[50];  // Valores aleatorios de humedad
-float[] co2Values = new float[50];  // Valores aleatorios de CO2
 
 void setup() {
     size(800, 600);
     background(canvasBackgroundColor);
+    
+    myPort = new Serial(this, Serial.list()[0], 9600);  // Configurar el puerto serial
+    myPort.bufferUntil('\n');  // Leer hasta encontrar un salto de línea
     
     boldFont = createFont("Font/Montserrat-Bold.ttf", 24);
     mediumFont = createFont("Font/Montserrat-Medium.ttf", 24);
     
     cards = new Card[5];
     cards[0] = new TemperatureCard("Temperatura");
-    cards[1] = new HumidityCard("Humedad", () -> humidity + "%");
-    cards[2] = new IlluminationCard("Iluminación", () -> illumination + " lux"); // Usar IlluminationCard
-    cards[3] = new CO2Card("CO2", () -> co2 + " ppm");
-    cards[4] = new Card("Proximidad", () -> proximity + "%");
-    
-    readData();
+    cards[1] = new HumidityCard("Humedad", humidity + "%");
+    cards[2] = new IlluminationCard("Iluminación", illumination + " lux"); // Usar IlluminationCard
+    println(co2+"????");
+    cards[3] = new CO2Card("CO2", co2 + " ppm");
+    cards[4] = new Card("Proximidad", proximity + "%");
 }
-
 
 void draw() {
     background(canvasBackgroundColor);
@@ -55,37 +59,43 @@ void draw() {
     // Card positions
     int[] xPositions = {xStart, xStart + cardWidth + padding};
     int[] yPositions = {yStart, yStart + cardHeight + padding, yStart + 2 * (cardHeight + padding)};
-    
+    println(co2+"ppm ------");
     // Draw cards
     cards[0].draw(xPositions[0], yPositions[0], cardWidth, cardHeight * 2 + padding);    // Temperatura
     cards[1].draw(xPositions[0], yPositions[2], cardWidth, cardHeight);                 // Humedad
     cards[2].draw(xPositions[1], yPositions[0], cardWidth, cardHeight);                 // Iluminación
     cards[3].draw(xPositions[1], yPositions[1], cardWidth, cardHeight);                 // CO2
     cards[4].draw(xPositions[1], yPositions[2], cardWidth, cardHeight);                 // Proximidad
-    
-    if (frameCount % 60 == 0) {
-        readData();
-    }
+    int n = 10;
+    cards[3] = new CO2Card("CO2", co2 + " ppm");
 }
 
-void readData() {
-    temperature = int(random(15, 30));
-    humidity = int(random(0, 100));
-    illumination = int(random(100, 1000));
-    co2 = int(random(300, 1000));
-    proximity = int(random(0, 100));    // Simulación de proximidad
-    
-    // Actualizar valores de humedad
-    for (int i = 0; i < humidityValues.length - 1; i++) {
-        humidityValues[i] = humidityValues[i + 1];
-    }
-    humidityValues[humidityValues.length - 1] = humidity;
+void readData(int test) {
+    serialEvent(myPort);
+    //cards[3] = new CO2Card("CO2", co2 + " ppm");
+    //println(test);
+      //cards[3] = new CO2Card("CO2", co2 + " ppm");
 
-    // Actualizar valores de CO2
-    for (int i = 0; i < co2Values.length - 1; i++) {
-        co2Values[i] = co2Values[i + 1];
+}
+
+void serialEvent(Serial myPort) {
+  
+    inputString = myPort.readStringUntil('\n');  // Leer hasta el salto de línea
+    inputString = trim(inputString);  // Quitar espacios en blanco y saltos de línea adicionales
+    //print("..");
+    if (inputString != null) {
+        String[] values = split(inputString, ',');
+        //if (values.length == 5) {
+          //  temperature = int(values[0]);
+           // humidity = int(values[1]);
+            //illumination = int(values[2]);
+            //print(values.toString());
+            co2 = int(values[0]);
+            //println(co2+"value");
+            //print(co2);
+           // proximity = int(values[4]);
+        //}
     }
-    co2Values[co2Values.length - 1] = co2;
 }
 
 @FunctionalInterface

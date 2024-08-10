@@ -1,6 +1,6 @@
 class HumidityCard extends Card {
     
-    HumidityCard(String title, StringSupplier valueSupplier) {
+    HumidityCard(String title, String valueSupplier) {
         super(title, valueSupplier);
     }
     
