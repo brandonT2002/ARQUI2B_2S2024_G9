@@ -100,7 +100,7 @@ void serialEvent(Serial myPort) {
         if (values.length == 5) {
             temperature = int(values[0]);
             humidity = int(values[1]);
-            ilumination = int(values[2]);
+            ilumination = 1020 - int(values[2]);
             co2 = int(values[3]);
             proximity = int(values[4]);
         }

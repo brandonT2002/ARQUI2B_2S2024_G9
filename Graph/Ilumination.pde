@@ -10,11 +10,11 @@ class IluminationCard extends Card {
         int iluminationValue = int(valueSupplier.split(" ")[0]);
         
         // Configuración de la barra de iluminación
-        int barWidth = width - 130;
+        int barWidth = width - 150;
         int barHeight = height / 3;
-        int graphX = x + 115;
+        int graphX = x + 135;
         int graphY = y + height - barHeight - 20;
-        int maxIllumination = 100;
+        int maxIllumination = 1020;
         
         // Dibuja la barra de iluminación
         noStroke();

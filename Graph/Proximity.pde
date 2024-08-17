@@ -47,6 +47,6 @@ class ProximityCard extends Card {
         fill(255);
         textSize(16);
         textAlign(CENTER, CENTER);
-        text(distance + " cm", mappedX, graphY + barraHeight + 20);
+        text(distance >= 100 ? (distance / 100) + " m" : distance + " cm", mappedX, graphY + barraHeight + 20);
     }
 }
