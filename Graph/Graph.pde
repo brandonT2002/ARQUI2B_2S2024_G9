@@ -28,9 +28,11 @@ Card[] cards;
 void setup() {
     size(800, 650);
     background(canvasBackgroundColor);
-    
-    myPort = new Serial(this, Serial.list()[0], 9600);  // Configurar el puerto serial
-    myPort.bufferUntil('\n');  // Leer hasta encontrar un salto de línea
+    println(Serial.list());
+
+    String portName = "COM7";
+    myPort = new Serial(this, portName, 9600);
+    myPort.bufferUntil('\n');
     
     boldFont = createFont("Font/Montserrat-Bold.ttf", 24);
     mediumFont = createFont("Font/Montserrat-Medium.ttf", 24);
@@ -42,6 +44,7 @@ void setup() {
     cards[3] = new CO2Card("CO2", co2 + " ppm");
     cards[4] = new ProximityCard("Proximidad", proximity + " %");
 }
+
 
 void draw() {
     background(canvasBackgroundColor);
