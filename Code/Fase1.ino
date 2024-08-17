@@ -18,6 +18,8 @@ int currentScreen = 0;    // Para rastrear el menú actual
 // --------  ULTRASONIC --------
 #define SENSOR_US_TRIG 12
 #define SENSOR_US_ECHO 13
+int proximity;
+long duration;
 
 // -------- MQ-135 --------
 const int mq2Pin = A0;
@@ -44,42 +46,131 @@ struct Data
   float temperature;
   byte light;
   int air;
-  float proximity;
+  int proximity;
 };
 const int dataSize = sizeof(Data);
 const int maxData = 10;
 
+// -------- ICONS --------
+byte gota_icon[8] = {
+    B00000,
+    B00100,
+    B00100,
+    B01110,
+    B11111,
+    B11111,
+    B01110,
+    B00000};
+byte termo_icon[8] = {
+    B01110,
+    B01010,
+    B01010,
+    B01010,
+    B01110,
+    B01110,
+    B01110,
+    B01110};
+byte aire_icon[8] = {
+    B01101,
+    B10010,
+    B00000,
+    B01001,
+    B10110,
+    B00000,
+    B01101,
+    B10010};
+byte linterna_icon[8] = {
+    B00100,
+    B10101,
+    B01110,
+    B00000,
+    B01110,
+    B01010,
+    B01010,
+    B01110};
+byte grado_icon[8] = {
+    B00110,
+    B01001,
+    B01001,
+    B00110,
+    B00000,
+    B00000,
+    B00000,
+    B00000};
+byte persona_icon[8] = {
+    B01110,
+    B01110,
+    B00100,
+    B01111,
+    B10100,
+    B00100,
+    B01010,
+    B10001};
+
+bool start = false;
 void setup()
 {
-  lcd.init();      // Inicializa la pantalla LCD
+  Serial.begin(9600);
+  lcd.init(); // Inicializa la pantalla LCD
+  lcd.createChar(1, gota_icon);
+  lcd.createChar(2, termo_icon);
+  lcd.createChar(3, aire_icon);
+  lcd.createChar(4, linterna_icon);
+  lcd.createChar(5, persona_icon);
+  lcd.createChar(6, grado_icon);
   lcd.backlight(); // Enciende la retroiluminación
   dht.begin();
-  pinMode(button1Pin, INPUT);
-  pinMode(button2Pin, INPUT);
-  pinMode(button3Pin, INPUT);
-
+  pinMode(button1Pin, INPUT_PULLUP);
+  pinMode(button2Pin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(button2Pin), saveData, FALLING);
+  pinMode(button3Pin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(button3Pin), showLastStoredData, FALLING);
+  pinMode(SENSOR_US_TRIG, OUTPUT);
+  pinMode(SENSOR_US_ECHO, INPUT);
   showWelcomeMenu(); // Muestra el menú de bienvenida al iniciar
 }
 
 void loop()
 {
   sendData();
-  // Leer estado de los botones
-  if (digitalRead(button1Pin) == HIGH)
+  bool button1State = digitalRead(button1Pin) == LOW;
+  bool button2State = digitalRead(button2Pin) == LOW;
+  bool button3State = digitalRead(button3Pin) == LOW;
+
+  if (button1State)
   {
-    advanceMenu(); // Avanza entre los menús
-    delay(300);    // Debounce
+    advanceMenu();
+    start = true;
   }
-  else if (digitalRead(button2Pin) == HIGH)
+  else if (button2State)
   {
-    saveData(); // Guardar data
-    delay(300); // Debounce
+    saveData();
   }
-  else if (digitalRead(button3Pin) == HIGH)
+  else if (button3State)
   {
-    showStoredData(); // Muestra la información guardada
-    delay(300);       // Debounce
+    showLastStoredData();
   }
+
+  if (start)
+  {
+    switch (currentScreen)
+    {
+    case 0:
+      temperatureHumidity();
+      break;
+    case 1:
+      ambientLight();
+      break;
+    case 2:
+      airQuality();
+      break;
+    case 3:
+      proximitySensor();
+      break;
+    }
+    delay(200);
+  }
+  // Actualizar la pantalla actual en tiempo real
 }
 
 void showWelcomeMenu()
@@ -98,7 +189,8 @@ void temperatureHumidity()
   lcd.print("Temp y Humedad:");
   lcd.setCursor(0, 1);
   DHTValues values = getDHT();
-  lcd.print(String(values.humedad) + ", " + String(values.temperatura)); // Muestra datos ficticios
+  String text = String(values.temperatura) + ", " + String(values.humedad);
+  lcd.print(text);
 }
 
 void ambientLight()
@@ -107,7 +199,8 @@ void ambientLight()
   lcd.setCursor(0, 0);
   lcd.print("Luz ambiente:");
   lcd.setCursor(0, 1);
-  lcd.print("Nivel: " + getLight()); // Muestra datos ficticios
+  String text = String(getLight());
+  lcd.print(text); // Muestra datos ficticios
 }
 
 void airQuality()
@@ -116,7 +209,9 @@ void airQuality()
   lcd.setCursor(0, 0);
   lcd.print("Calidad de aire:");
   lcd.setCursor(0, 1);
-  lcd.print("CO2: " + getMQ()); // Muestra datos ficticios
+  // lcd.print("CO2: 400ppm"); // Muestra datos ficticios
+  String text = String(getMQ()) + "ppm";
+  lcd.print(text);
 }
 
 void proximitySensor()
@@ -125,7 +220,8 @@ void proximitySensor()
   lcd.setCursor(0, 0);
   lcd.print("Proximidad:");
   lcd.setCursor(0, 1);
-  lcd.print(getDistance()); // Muestra datos ficticios
+  String text = String(getDistance()) + "cm";
+  lcd.print(text);
 }
 
 void advanceMenu()
@@ -194,7 +290,7 @@ void showStoredData()
     Serial.print(data.temperature);
     Serial.print(", ");
     Serial.print("Light = ");
-    Serial.print(data.light);
+    Serial.print(analogRead(lightPin));
     Serial.print(", ");
     Serial.print("Proximity = ");
     Serial.println(data.proximity);
@@ -233,7 +329,8 @@ void saveData()
   data.proximity = getDistance();
   EEPROM.put(2 + dataQuantity * sizeof(Data), data);
   dataQuantity++;
-  Serial.println("guardado");
+  String text = "guardado, distancia " + String(data.proximity);
+  Serial.println(text);
   EEPROM.put(0, dataQuantity);
 }
 
@@ -285,33 +382,41 @@ void showLCD(Data data, int count)
 
 void showLastStoredData()
 {
-  Data data;
-  int count = 0;
+  EEPROM.get(0, dataQuantity);
 
+  // Verificar si hay datos almacenados
   if (dataQuantity == 0)
   {
-    lcd.setCursor(0, 0);
-    lcd.print("No hay información guardada");
+    Serial.println("No hay datos guardados en la EEPROM.");
+    return;
   }
 
-  int address = 2 + dataQuantity * sizeof(Data);
+  // Calcular la dirección del último conjunto de datos
+  int address = 2 + (dataQuantity - 1) * sizeof(Data);
+
+  // Leer el último conjunto de datos
+  Data data;
   EEPROM.get(address, data);
   showLCD(data, dataQuantity);
 }
 
-float getDistance()
+int getDistance()
 {
   digitalWrite(SENSOR_US_TRIG, LOW);
   delayMicroseconds(2);
-
   digitalWrite(SENSOR_US_TRIG, HIGH);
   delayMicroseconds(10);
   digitalWrite(SENSOR_US_TRIG, LOW);
 
-  long duration = pulseIn(SENSOR_US_ECHO, HIGH);
+  duration = pulseIn(SENSOR_US_ECHO, HIGH);
+  proximity = duration * 0.034 / 2; // Calculamos la proximidad en cm
 
-  float distance = duration * 0.034 / 2;
-  return distance;
+  // Limitar la proximidad a un máximo de 15 cm
+  if (proximity > 15)
+  {
+    proximity = 15; // Si la proximidad es mayor a 15 cm, la limitamos a 15 cm
+  }
+  return proximity;
 }
 
 int getMQ()
@@ -321,10 +426,7 @@ int getMQ()
 
 int getLight()
 {
-  int lightValue = analogRead(lightPin);
-  lightValue = 1024 - lightValue;
-  int porcent = (lightValue * 100) / 1024;
-  return porcent;
+  return analogRead(lightPin);
 }
 
 DHTValues getDHT()
