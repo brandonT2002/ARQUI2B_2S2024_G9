@@ -202,7 +202,8 @@ void showStoredData()
   }
 }
 
-void sendData(){
+void sendData()
+{
   Data data;
   DHTValues values = getDHT();
   data.humidity = values.humedad;
@@ -228,6 +229,7 @@ void saveData()
   data.humidity = values.humedad;
   data.temperature = values.temperatura;
   data.light = getLight();
+  data.air = getMQ();
   data.proximity = getDistance();
   EEPROM.put(2 + dataQuantity * sizeof(Data), data);
   dataQuantity++;
