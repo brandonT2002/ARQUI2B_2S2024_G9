@@ -13,7 +13,7 @@ const int button3Pin = 9; // Pin del botón 3
 int currentScreen = 0;    // Para rastrear el menú actual
 
 // -------- LIGHT --------
-#define lightPin A4 // Pin analógico para el sensor de luz
+#define lightPin A3 // Pin analógico para el sensor de luz
 
 // --------  ULTRASONIC --------
 #define SENSOR_US_TRIG 12
