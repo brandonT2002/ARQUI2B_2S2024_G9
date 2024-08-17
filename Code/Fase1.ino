@@ -63,6 +63,7 @@ void setup()
 
 void loop()
 {
+  sendData();
   // Leer estado de los botones
   if (digitalRead(button1Pin) == HIGH)
   {
@@ -199,6 +200,25 @@ void showStoredData()
     Serial.println(data.proximity);
     i++;
   }
+}
+
+void sendData(){
+  Data data;
+  DHTValues values = getDHT();
+  data.humidity = values.humedad;
+  data.temperature = values.temperatura;
+  data.light = getLight();
+  data.air = getMQ();
+  data.proximity = getDistance();
+  Serial.print(data.temperature);
+  Serial.print(",");
+  Serial.print(data.humidity);
+  Serial.print(",");
+  Serial.print(data.light);
+  Serial.print(",");
+  Serial.print(data.air);
+  Serial.print(",");
+  Serial.println(data.proximity);
 }
 
 void saveData()
