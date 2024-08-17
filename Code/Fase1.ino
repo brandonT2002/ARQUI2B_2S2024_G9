@@ -16,8 +16,8 @@ int currentScreen = 0;    // Para rastrear el menú actual
 #define lightPin A4 // Pin analógico para el sensor de luz
 
 // --------  ULTRASONIC --------
-#define SENSOR_US_TRIG 8
-#define SENSOR_US_ECHO 7
+#define SENSOR_US_TRIG 12
+#define SENSOR_US_ECHO 13
 
 // -------- MQ-135 --------
 const int mq2Pin = A0;
