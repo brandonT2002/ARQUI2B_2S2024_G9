@@ -7,6 +7,7 @@ int ilumination = 0;
 int co2 = 0;
 int proximity = 0;
 String inputString = " ";
+boolean showModal = false;
 
 color cardBackgroundColor = color(38, 38, 41);
 color canvasBackgroundColor = color(23, 22, 26);
@@ -30,7 +31,7 @@ void setup() {
     background(canvasBackgroundColor);
     println(Serial.list());
 
-    String portName = "COM7";
+    String portName = "COM3";
     myPort = new Serial(this, portName, 9600);
     myPort.bufferUntil('\n');
     
@@ -80,15 +81,64 @@ void draw() {
     cards[3].draw(xPositions[1], yPositions[1], cardWidth, cardHeight);
     cards[4].draw(xPositions[1], yPositions[2], cardWidth, cardHeight);
 
+    fill(0);
     textAlign(CENTER);
     fill(titleColor);
     textFont(mediumFont);
     textSize(15);
     text("Grupo 09 - Arqui2", 400, 630);
+
+    if (showModal) {
+        drawBlurOverlay();
+        showModalWindow();
+    }
 }
 
-void readData(int test) {
-    serialEvent(myPort);
+void drawBlurOverlay() {
+    fill(0, 15); // opacidad del 15%
+    rect(0, 0, width, height);
+    
+    // Efecto Blur
+    filter(BLUR, 8);
+}
+
+void mousePressed() {
+    if (!showModal && mouseX > 350 && mouseX < 450 && mouseY > 615 && mouseY < 645) {
+        showModal = true;  // Mostrar la ventana modal
+    } else if (showModal && mouseX > 350 && mouseX < 450 && mouseY > 485 && mouseY < 515) {
+        showModal = false;  // Cerrar la ventana modal
+    }
+}
+
+void showModalWindow() {
+    fill(canvasBackgroundColor);
+    rect(200, 100, 400, 450, 10);
+
+    fill(255);
+    textSize(28);
+    textAlign(CENTER);
+    text("Arqui2", 400, 175);
+
+    textSize(20);
+    text("Brandon Tejaxún", 400, 250);
+    text("Dyllan García", 400, 280);
+    text("Miguel Guirola", 400, 310);
+    text("Joab Ajsivinac", 400, 340);
+    text("Marcos Pérez", 400, 370);
+    text("Eduardo Barillas", 400, 400);
+
+    // Crear el botón "Cerrar"
+    int buttonX = 350;
+    int buttonY = 485;
+    int buttonWidth = 100;
+    int buttonHeight = 30;
+    
+    fill(cardBackgroundColor);
+    rect(buttonX, buttonY, buttonWidth, buttonHeight, 5);
+    
+    fill(255); // Color del texto
+    textSize(15);
+    text("Cerrar", buttonX + buttonWidth / 2, buttonY + buttonHeight / 2 + 5);  // Centrando el texto en el botón
 }
 
 void serialEvent(Serial myPort) {
@@ -100,7 +150,7 @@ void serialEvent(Serial myPort) {
         if (values.length == 5) {
             temperature = int(values[0]);
             humidity = int(values[1]);
-            ilumination = 1020 - int(values[2]);
+            ilumination = int(values[2]);
             co2 = int(values[3]);
             proximity = int(values[4]);
         }
