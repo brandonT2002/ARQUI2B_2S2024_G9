@@ -31,7 +31,7 @@ void setup() {
     background(canvasBackgroundColor);
     println(Serial.list());
 
-    String portName = "COM3";
+    String portName = "COM5";
     myPort = new Serial(this, portName, 9600);
     myPort.bufferUntil('\n');
     

@@ -426,7 +426,7 @@ int getMQ()
 
 int getLight()
 {
-  return analogRead(lightPin);
+  return 1024 - analogRead(lightPin);
 }
 
 DHTValues getDHT()
