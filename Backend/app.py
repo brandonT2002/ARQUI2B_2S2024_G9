@@ -1,145 +1,62 @@
-from flask import Flask, jsonify, request
-import os
-import pymysql
-from dotenv import load_dotenv
+import serial
+import time
+import mysql.connector
 from datetime import datetime
 
-load_dotenv()
-app = Flask(__name__)
-fechaActual = datetime.now()
-
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = int(os.getenv('DB_PORT', 3306))
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-
-def connect_db():
-    connection = pymysql.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
-    return connection
-
-@app.route('/')
-def index():
-    return jsonify({"message": "API corriendo en el puerto 3001"})
+# Configurar el puerto serial y la velocidad de baudios
+ser = serial.Serial('COM7', 9600, timeout=1)  # Cambia 'COM7' por el puerto correcto en tu sistema
+time.sleep(2)  # Esperar a que la conexión se estabilice
 
 # Conexión a la base de datos
-@app.route('/check-db-connection')
-def check_db_connection():
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("SELECT VERSION();")
-        db_version = cursor.fetchone()
-        return jsonify({
-            "status": "success",
-            "message": "Conexión exitosa con la base de datos",
-            "db_version": db_version[0]
-        })
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": f"Error al conectar a la base de datos: {str(e)}"
-        })
-    finally:
-        if connection:
-            cursor.close()
-            connection.close()
+db_config = {
+    'host': 'fase2-arqui2.c7cwk0oc6gti.us-east-1.rds.amazonaws.com',
+    'user': 'admin',
+    'password': 'admin_arqui2',
+    'database': 'FASE2_ARQUI2'
+}
 
-@app.route('/temperature', methods=['POST'])
-def add_temperature():
-    data = request.get_json()
-    valor = data.get('valor')
-    fecha = datetime.now().strftime('%Y-%m-%d')
+# Crear la conexión con MySQL
+db_connection = mysql.connector.connect(**db_config)
+cursor = db_connection.cursor()
 
-    if valor is None:
-        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
+# Función para insertar datos en la tabla correspondiente
+def insertar_datos(tabla, valor):
+    fecha_actual = datetime.now().strftime('%Y-%m-%d')  # Fecha en formato YYYY-MM-DD
+    query = f'INSERT INTO {tabla} (VALOR, FECHA) VALUES (%s, %s)'
+    cursor.execute(query, (valor, fecha_actual))
+    db_connection.commit()  # Confirmar la transacción
+    print(f"Datos insertados en {tabla}: {valor} en la fecha {fecha_actual}")
 
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("INSERT INTO TEMPERATURA (valor, fecha) VALUES (%s, %s)", (valor, fecha))
-        connection.commit()
-        return jsonify({"status": "success", "message": "Datos recibidos correctamente"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500
+# Leer datos del puerto serial
+try:
+    while True:
+        if ser.in_waiting > 0:
+            # Leer la línea de datos del monitor serial
+            line = ser.readline().decode('utf-8').rstrip()
+            print(f"Datos recibidos: {line}")
 
-@app.route('/humidity', methods=['POST'])
-def add_humidity():
-    data = request.get_json()
-    valor = data.get('valor')
-    fecha = datetime.now().strftime('%Y-%m-%d')
+            # Parsear la línea recibida (asumiendo formato JSON, por ejemplo: {"temperatura": 25.3, "humedad": 45.2, "luz": 200.5, "co2": 400.0, "proximidad": 10.0})
+            try:
+                data = eval(line)  # Convierte la cadena a un diccionario
 
-    if valor is None:
-        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
+                # Insertar los datos en las tablas correspondientes
+                if "temperatura" in data:
+                    insertar_datos('TEMPERATURA', data['temperatura'])
+                if "humedad" in data:
+                    insertar_datos('HUMEDAD', data['humedad'])
+                if "luz" in data:
+                    insertar_datos('LUZ', data['luz'])
+                if "co2" in data:
+                    insertar_datos('CO2', data['co2'])
+                if "proximidad" in data:
+                    insertar_datos('PROXIMIDAD', data['proximidad'])
+            except Exception as e:
+                print(f"Error al parsear los datos: {e}")
 
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("INSERT INTO HUMEDAD (valor, fecha) VALUES (%s, %s)", (valor, fecha))
-        connection.commit()
-        return jsonify({"status": "success", "message": "Datos recibidos correctamente"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500
-
-@app.route('/light', methods=['POST'])
-def add_light():
-    data = request.get_json()
-    valor = data.get('valor')
-    fecha = datetime.now().strftime('%Y-%m-%d')
-
-    if valor is None:
-        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
-
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("INSERT INTO LUZ (valor, fecha) VALUES (%s, %s)", (valor, fecha))
-        connection.commit()
-        return jsonify({"status": "success", "message": "Datos recibidos correctamente"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500
-
-@app.route('/co2', methods=['POST'])
-def add_co2():
-    data = request.get_json()
-    valor = data.get('valor')
-    fecha = datetime.now().strftime('%Y-%m-%d')
-
-    if valor is None:
-        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
-
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("INSERT INTO CO2 (valor, fecha) VALUES (%s, %s)", (valor, fecha))
-        connection.commit()
-        return jsonify({"status": "success", "message": "Datos recibidos correctamente"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500    
-
-@app.route('/proximity', methods=['POST'])
-def add_proximity():
-    data = request.get_json()
-    valor = data.get('valor')
-    fecha = datetime.now().strftime('%Y-%m-%d')
-
-    if valor is None:
-        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
-
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("INSERT INTO PROXIMIDAD (valor, fecha) VALUES (%s, %s)", (valor, fecha))
-        connection.commit()
-        return jsonify({"status": "success", "message": "Datos recibidos correctamente"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500    
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3001, debug=True)
+except KeyboardInterrupt:
+    print("Cerrando la conexión...")
+finally:
+    # Cerrar las conexiones
+    cursor.close()
+    db_connection.close()
+    ser.close()

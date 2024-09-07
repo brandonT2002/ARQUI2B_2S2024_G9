@@ -2,7 +2,9 @@
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
 #include <EEPROM.h>
+#include <ArduinoJson.h>
 
+DynamicJsonDocument doc(120);
 // -------- LCD --------
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Dirección I2C de la pantalla
 
@@ -316,6 +318,15 @@ void sendData()
   Serial.print(data.air);
   Serial.print(",");
   Serial.println(data.proximity);
+
+  // Agregar al JSON
+    doc["temperatura"] = data.temperature;
+    doc["humedad"] = data.humidity;
+    doc["luzSolar"] = data.light;
+    doc["co2"] = data.air;
+    doc["proximidad"] = data.proximity;
+    serializeJson(doc, Serial);
+    delay(30000);
 }
 
 void saveData()
