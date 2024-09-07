@@ -2,9 +2,11 @@ from flask import Flask, jsonify, request
 import os
 import pymysql
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 app = Flask(__name__)
+fechaActual = datetime.now()
 
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = int(os.getenv('DB_PORT', 3306))
@@ -53,9 +55,9 @@ def check_db_connection():
 def add_temperature():
     data = request.get_json()
     valor = data.get('valor')
-    fecha = data.get('fecha')
+    fecha = datetime.now().strftime('%Y-%m-%d')
 
-    if valor is None or fecha is None:
+    if valor is None:
         return jsonify({"status": "error", "message": "Datos incompletos"}), 400
 
     try:
@@ -68,12 +70,12 @@ def add_temperature():
         return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500
 
 @app.route('/humidity', methods=['POST'])
-def add_temperature():
+def add_humidity():
     data = request.get_json()
     valor = data.get('valor')
-    fecha = data.get('fecha')
+    fecha = datetime.now().strftime('%Y-%m-%d')
 
-    if valor is None or fecha is None:
+    if valor is None:
         return jsonify({"status": "error", "message": "Datos incompletos"}), 400
 
     try:
@@ -86,12 +88,12 @@ def add_temperature():
         return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500
 
 @app.route('/light', methods=['POST'])
-def add_temperature():
+def add_light():
     data = request.get_json()
     valor = data.get('valor')
-    fecha = data.get('fecha')
+    fecha = datetime.now().strftime('%Y-%m-%d')
 
-    if valor is None or fecha is None:
+    if valor is None:
         return jsonify({"status": "error", "message": "Datos incompletos"}), 400
 
     try:
@@ -104,12 +106,12 @@ def add_temperature():
         return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500
 
 @app.route('/co2', methods=['POST'])
-def add_temperature():
+def add_co2():
     data = request.get_json()
     valor = data.get('valor')
-    fecha = data.get('fecha')
+    fecha = datetime.now().strftime('%Y-%m-%d')
 
-    if valor is None or fecha is None:
+    if valor is None:
         return jsonify({"status": "error", "message": "Datos incompletos"}), 400
 
     try:
@@ -122,12 +124,12 @@ def add_temperature():
         return jsonify({"status": "error", "message": f"Error al insertar datos: {str(e)}"}), 500    
 
 @app.route('/proximity', methods=['POST'])
-def add_temperature():
+def add_proximity():
     data = request.get_json()
     valor = data.get('valor')
-    fecha = data.get('fecha')
+    fecha = datetime.now().strftime('%Y-%m-%d')
 
-    if valor is None or fecha is None:
+    if valor is None:
         return jsonify({"status": "error", "message": "Datos incompletos"}), 400
 
     try:
