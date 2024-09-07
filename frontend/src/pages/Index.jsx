@@ -5,7 +5,7 @@ import { FaCalendarDay, FaTemperatureEmpty, FaDroplet, FaLightbulb, FaCloud } fr
 import { FaSearch } from "react-icons/fa";
 import { Button } from "../components/Button";
 import { SelectInput } from '../components/SelectInput'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Datepicker from "react-tailwindcss-datepicker";
 import ChartComponent from "../components/Chart";
 import { GiUltrasound } from "react-icons/gi";
@@ -14,8 +14,16 @@ import { MdDoNotDisturb } from "react-icons/md";
 import { useMain } from "../context/MainContext";
 
 function Index() {
+    const options = [
+        { icon: <FaTemperatureEmpty />, id: 1, nombre: 'Temperatura', endpoint:'temperature'},
+        { icon: <FaDroplet />, id: 2, nombre: 'Humedad' , endpoint:'humidity'},
+        { icon: <FaLightbulb />, id: 3, nombre: 'Luz', endpoint:'light' },
+        { icon: <FaCloud />, id: 4, nombre: 'CO2', endpoint:'co2' },
+        { icon: <GiUltrasound />, id: 5, nombre: 'Proximidad', endpoint:'proximity' },
+    ]
 
     const [selectedSensor, setselectedSensor] = useState('')
+    const [data, setData] = useState([])
     const {  getSensorData } = useMain()
 
     const handleSelectBook = (value) => {
@@ -23,28 +31,28 @@ function Index() {
             setselectedSensor(value)
         }
     }
-
+    useEffect(()=>{
+        const fetchData = async()=>{
+            const remoteData = await fetch(`http://192.168.2.22/${options.find(e=>e.id === selectedSensor.id)?.endpoint||'temperature'}`).then(res=>res.json())
+            console.log(remoteData)
+            setData(remoteData)
+        }
+        fetchData()
+    },[selectedSensor])
     const [value, setValue] = useState({
         startDate: null,
         endDate: null
     });
 
-    const data = [];
-    for (let num = 30; num >= 0; num--) {
-        data.push({
-            date: subDays(new Date(), num).toISOString().substr(0, 10),
-            value: 1 + Math.random(),
-        });
-    }
+    // const data = [];
+    // for (let num = 30; num >= 0; num--) {
+    //     data.push({
+    //         date: subDays(new Date(), num).toISOString().substr(0, 10),
+    //         value: 1 + Math.random(),
+    //     });
+    // }
 
-    const options = [
-        { icon: <FaTemperatureEmpty />, id: 1, nombre: 'Temperatura' },
-        { icon: <FaDroplet />, id: 2, nombre: 'Humedad' },
-        { icon: <FaLightbulb />, id: 3, nombre: 'Luz' },
-        { icon: <FaCloud />, id: 4, nombre: 'CO2' },
-        { icon: <GiUltrasound />, id: 5, nombre: 'Proximidad' },
-    ]
-
+    
     const searchData = () => {
         getSensorData(selectedSensor.id, value.startDate, value.endDate)
     }
