@@ -17,6 +17,7 @@
     "@remixicon/react": "^4.2.0",
     "@tremor/react": "^3.17.4",
     "antd": "^5.20.3",
+    "axios": "^1.7.7",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "lightweight-charts": "^4.2.0",

@@ -9,12 +9,14 @@ import { useState } from 'react';
 import Datepicker from "react-tailwindcss-datepicker";
 import ChartComponent from "../components/Chart";
 import { GiUltrasound } from "react-icons/gi";
-import {  subDays } from "date-fns";
+import { subDays } from "date-fns";
 import { MdDoNotDisturb } from "react-icons/md";
+import { useMain } from "../context/MainContext";
 
 function Index() {
 
     const [selectedSensor, setselectedSensor] = useState('')
+    const {  getSensorData } = useMain()
 
     const handleSelectBook = (value) => {
         if (value) {
@@ -36,12 +38,16 @@ function Index() {
     }
 
     const options = [
-        { icon: <FaTemperatureEmpty/>, id: 1, nombre: 'Temperatura' },
+        { icon: <FaTemperatureEmpty />, id: 1, nombre: 'Temperatura' },
         { icon: <FaDroplet />, id: 2, nombre: 'Humedad' },
         { icon: <FaLightbulb />, id: 3, nombre: 'Luz' },
         { icon: <FaCloud />, id: 4, nombre: 'CO2' },
         { icon: <GiUltrasound />, id: 5, nombre: 'Proximidad' },
     ]
+
+    const searchData = () => {
+        getSensorData(selectedSensor.id, value.startDate, value.endDate)
+    }
 
     return (
         <div className='flex h-screen bg-background-light dark:bg-background-dark w-full items-center justify-center'>
@@ -73,7 +79,7 @@ function Index() {
                             />
                         }
                             options={options} icon={<FaCalendarDay className="text-text-light dark:text-text-dark" size={20} />} label="Fecha" />
-                        <Button icon={<FaSearch size={15} />} label="Buscar" />
+                        <Button icon={<FaSearch size={15} />} label="Buscar" onclick={searchData} />
                     </div>
                     <div className="flex flex-col w-full h-full flex-grow bg-panel_bg-light dark:bg-panel_bg-dark rounded-lg py-4 px-4">
                         <div className="flex justify-between">
