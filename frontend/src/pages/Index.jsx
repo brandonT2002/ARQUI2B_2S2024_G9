@@ -16,7 +16,7 @@ import { useMain } from "../context/MainContext";
 function Index() {
 
     const [selectedSensor, setselectedSensor] = useState('')
-    const {  getSensorData } = useMain()
+    const { getSensorData, sensorData } = useMain()
 
     const handleSelectBook = (value) => {
         if (value) {
@@ -29,20 +29,18 @@ function Index() {
         endDate: null
     });
 
-    const data = [];
-    for (let num = 30; num >= 0; num--) {
-        data.push({
-            date: subDays(new Date(), num).toISOString().substr(0, 10),
-            value: 1 + Math.random(),
-        });
-    }
+    // const data = [];
+
+
+        // console.log(subDays(new Date(), num).toISOString().substr(0, 10))
+    
 
     const options = [
-        { icon: <FaTemperatureEmpty />, id: 1, nombre: 'Temperatura' },
-        { icon: <FaDroplet />, id: 2, nombre: 'Humedad' },
-        { icon: <FaLightbulb />, id: 3, nombre: 'Luz' },
-        { icon: <FaCloud />, id: 4, nombre: 'CO2' },
-        { icon: <GiUltrasound />, id: 5, nombre: 'Proximidad' },
+        { icon: <FaTemperatureEmpty />, id: 1, nombre: 'temperature' },
+        { icon: <FaDroplet />, id: 2, nombre: 'humidity' },
+        { icon: <FaLightbulb />, id: 3, nombre: 'light' },
+        { icon: <FaCloud />, id: 4, nombre: 'co2' },
+        { icon: <GiUltrasound />, id: 5, nombre: 'proximity' }
     ]
 
     const searchData = () => {
@@ -91,7 +89,11 @@ function Index() {
                         </div>
                         <div className="flex flex-grow items-end">
                             <div className="grid w-full py-2 h-[90%] pr-3">
-                                <ChartComponent data={data} />
+                                {
+                                    sensorData.length > 0 ? <ChartComponent data={sensorData} /> : <div className="flex items-center justify-center w-full h-full bg-panel_bg-light dark:bg-panel_bg-dark rounded-lg">
+                                        <h3 className="text-text-light dark:text-text-dark text-xl font-bold">No hay datos</h3>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
