@@ -44,8 +44,8 @@ try:
                     insertar_datos('TEMPERATURA', data['temperatura'])
                 if "humedad" in data:
                     insertar_datos('HUMEDAD', data['humedad'])
-                if "luz" in data:
-                    insertar_datos('LUZ', data['luz'])
+                if "luzSolar" in data:
+                    insertar_datos('LUZ', data['luzSolar'])
                 if "co2" in data:
                     insertar_datos('CO2', data['co2'])
                 if "proximidad" in data:

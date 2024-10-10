@@ -26,6 +26,7 @@ long duration;
 // -------- MQ-135 --------
 const int mq2Pin = A0;
 
+const int iluminacion = A1;
 // -------- DHT-11 --------
 #define DHTPIN 11
 #define DHTTYPE DHT11
@@ -122,6 +123,7 @@ void setup()
   lcd.createChar(6, grado_icon);
   lcd.backlight(); // Enciende la retroiluminación
   dht.begin();
+  //pinMode(iluminacion,OUTPUT);
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(button2Pin), saveData, FALLING);
@@ -138,7 +140,7 @@ void loop()
   bool button1State = digitalRead(button1Pin) == LOW;
   bool button2State = digitalRead(button2Pin) == LOW;
   bool button3State = digitalRead(button3Pin) == LOW;
-
+  digitalWrite(iluminacion, HIGH);
   if (button1State)
   {
     advanceMenu();
@@ -437,6 +439,15 @@ int getMQ()
 
 int getLight()
 {
+  int val = 1024 - analogRead(lightPin);
+  Serial.println(val);
+  if(val < 200){
+    digitalWrite(iluminacion, HIGH);
+
+  }else{
+    digitalWrite(iluminacion, LOW);
+    
+  }
   return 1024 - analogRead(lightPin);
 }
 
