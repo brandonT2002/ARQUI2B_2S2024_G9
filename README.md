@@ -10,7 +10,7 @@
 
 <div align="center" style="display:flex;justify-content:center;gap:20px">
  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=git,arduino,processing,aws" />
-    <img src="https://o.lnwfile.com/_/o/_raw/7f/0q/z1.png" height="45" width="55" style="border-radius:10px; background-color:white; margin-left:5px;">
+    <img src="https://skillicons.dev/icons?i=git,arduino,processing,react,python,js,mysql,aws" />
+    <img src="https://www.svgrepo.com/show/349487/raspberry-pi.svg" height="45" width="50" style="border-radius:10px; background-color:white; margin-left:5px;">
   </a>
 </div>
