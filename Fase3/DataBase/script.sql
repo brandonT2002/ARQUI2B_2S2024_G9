@@ -1,0 +1,12 @@
+CREATE DATABASE ace2;
+
+use ace2;
+
+CREATE TABLE lecturas(
+	temperatura DECIMAL(5, 2) NOT NULL,
+	humedad DECIMAL(5, 2) NOT NULL,
+	luz DECIMAL(5, 2) NOT NULL,
+	co2 DECIMAL(5, 2) NOT NULL,
+	proximidad DECIMAL(5, 2) NOT NULL,
+	fecha DATETIME NOT NULL DEFAULT NOW()
+);
