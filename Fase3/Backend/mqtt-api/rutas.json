@@ -1,0 +1,30 @@
+{
+    // Encerder luces
+    "encenderLuces": {
+        "ruta": "/api/lights/turn-on",
+        "method": "POST"
+    },
+    // Apagar luces
+    "apagarLuces": {
+        "ruta": "/api/lights/turn-off",
+        "method": "POST"
+    },
+    // Mover motor
+    "abrirPuerta": {
+        "ruta": "/api/gate-open",
+        "method": "POST",
+        "body": {
+            "pass": "1234"
+        }
+    },
+    // Datos tiempo real
+    "datosTiempoReal": {
+        "ruta": "/api/info",
+        "method": "GET"
+    },
+    // Datos de acceso
+    "datosAcceso": {
+        "ruta": "/api/access",
+        "method": "GET"
+    },
+}
