@@ -1,9 +1,8 @@
 import PropTypes from 'prop-types';
-import { RiBook2Fill } from "react-icons/ri";
 import { ChartHome } from './ChartHome';
 import { useState, useEffect } from 'react';
 
-function SensorCard({ background, color }) {
+function SensorCard({icon,  title, color }) {
     const maxRecords = 4; // Máximo de registros en la gráfica
     const baseDate = new Date('2024-10-01'); // Fecha base
 
@@ -46,7 +45,11 @@ function SensorCard({ background, color }) {
     return (
         <div className="grid grid-rows-[auto,1fr] gap-2 bg-panel-dark rounded-md bg-panel_bg-dark">
             <div className='p-3 flex flex-col items-start gap-2'>
-                <RiBook2Fill size={36} color={color} className={`p-2 rounded-full ${background}`} />
+                {/* <RiBook2Fill size={36} color={color} className={`p-2 rounded-full ${background}`} /> */}
+                <div className='flex flex-row items-center gap-2'>
+                {icon}
+                <span className='font-semibold'>{title}</span>
+                </div>
                 <span className='text-2xl font-bold'>{currentSensorValue.toFixed(2)}</span> {/* Muestra el último valor generado */}
             </div>
             <div className='grid place-items-center h-full'>
@@ -60,5 +63,7 @@ export default SensorCard;
 
 SensorCard.propTypes = {
     color: PropTypes.string,
-    background: PropTypes.string
+    background: PropTypes.string,
+    icon: PropTypes.element,
+    title: PropTypes.string
 };

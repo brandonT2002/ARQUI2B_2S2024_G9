@@ -1,9 +1,9 @@
-import { LuChevronFirst, LuChevronLast, LuMoreVertical } from "react-icons/lu"
-import { FcAutomotive } from "react-icons/fc";
+import { LuChevronFirst, LuChevronLast } from "react-icons/lu"
 import { createContext, useContext, useState } from "react"
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom'; // Importa NavLink
 import { IoCarSportSharp } from "react-icons/io5";
+import Modal from "./Modal";
 
 const SidebarContext = createContext();
 
@@ -25,16 +25,15 @@ export default function Sidebar({ children }) {
                         <ul className="flex-1 px-3">{children}</ul>
                     </SidebarContext.Provider>
 
-                    <div className="flex p-3 dark:border-border-dark/60">
-                        <FcAutomotive size={45} />
+                    {/* <div className="flex p-3 dark:border-border-dark/60 text-[#a7a6a7] items-center justify-center">
+                        <IoMdInformationCircle size={35} />
                         <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"} `}>
-                            <div className="leading-4">
-                                <h4 className="font-semibold">constGenius</h4>
-                                <span className="text-xs text-gray-600">constgenius@gmail.com</span>
+                            <div>
+                                <h4 className="font-semibold">Información</h4>
                             </div>
-                            <LuMoreVertical size={20} />
                         </div>
-                    </div>
+                    </div> */}
+                    <Modal expanded={expanded}/>
                 </nav>
             </aside>
         </>

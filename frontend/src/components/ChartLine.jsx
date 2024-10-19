@@ -26,8 +26,8 @@ export const ChartLine = ({ data, color }) => {
             <LineChart data={data} >
                 <defs>
                     <linearGradient id={id_color} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={colorFillStart} stopOpacity={0.6} />
-                        <stop offset="80%" stopColor={colorFillEnd} stopOpacity={0.07} />
+                        <stop offset="0%" stopColor={colorFillStart} stopOpacity={0.9} />
+                        <stop offset="80%" stopColor={colorFillEnd} stopOpacity={0.5} />
                     </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#8c8c7d" />
@@ -50,7 +50,7 @@ export const ChartLine = ({ data, color }) => {
                         return "";
                     }}
                 />
-                <Line type="monotone" dataKey="value" stroke="#fff" activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="value" stroke="#26d9b7" activeDot={{ r: 8 }} dot={{ r: 5 }} strokeWidth={2}/>
                 <Tooltip content={<CustomTooltip />} />
             </LineChart>
         </ResponsiveContainer>
