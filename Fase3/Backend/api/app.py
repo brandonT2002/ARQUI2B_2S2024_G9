@@ -3,6 +3,10 @@ import os
 import pymysql
 from datetime import datetime
 from contextlib import contextmanager
+import pandas as pd
+from sqlalchemy import create_engine
+from statsmodels.tsa.arima.model import ARIMA
+import json
 
 # Configuración de Flask
 app = Flask(__name__)
@@ -86,6 +90,55 @@ def get_last_entries(column_name, limit):
     except Exception as e:
         return jsonify({"status": "error", "message": f"Error al obtener datos: {str(e)}"}), 500
 
+# Contexto de conexión a la base de datos
+@contextmanager
+def get_db_connection():
+    connection = None
+    try:
+        connection = create_engine(f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+        yield connection
+    finally:
+        if connection:
+            connection.dispose()
+
+# Función para conectar a la base de datos y recuperar los datos
+def obtener_datos():
+    with get_db_connection() as engine:
+        query = "SELECT fecha, temperatura, humedad, luz, co2 FROM lecturas ORDER BY fecha"
+        df = pd.read_sql(query, engine)
+    return df
+
+# Función para entrenar un modelo ARIMA y hacer predicciones
+def predecir_dato_serie_temporal(serie, dias):
+    model = ARIMA(serie, order=(5, 1, 0))  # Parámetros del modelo ARIMA (p, d, q)
+    model_fit = model.fit()
+    prediccion = model_fit.forecast(steps=dias)
+    return prediccion
+
+# Función para calcular los días entre la última fecha registrada y la fecha solicitada
+def calcular_dias_entre_fechas(ultima_fecha, fecha_objetivo):
+    return (fecha_objetivo - ultima_fecha).days
+
+def predecir_para_fecha(fecha_objetivo):
+    df = obtener_datos()
+    df['fecha'] = pd.to_datetime(df['fecha'])
+    df.set_index('fecha', inplace=True)
+    
+    # Asegúrate de que el índice tenga una frecuencia
+    df = df.resample('5s').mean()
+
+    ultima_fecha = df.index.max()
+    dias = calcular_dias_entre_fechas(ultima_fecha, fecha_objetivo)
+    
+    if dias < 1 or dias > 8:
+        return {"status": "error", "message": "La proyección solo puede realizarse para un rango de 1 a 8 días desde la última fecha registrada."}, 400
+    
+    predicciones = {}
+    for columna in ['temperatura', 'humedad', 'luz', 'co2']:
+        predicciones[columna] = predecir_dato_serie_temporal(df[columna], dias).iloc[-1]
+    
+    return predicciones, 200
+
 @app.route('/')
 def index():
     return jsonify({"message": "API corriendo en la raspberry"})
@@ -107,6 +160,25 @@ def check_db_connection():
             "status": "error",
             "message": f"Error al conectar a la base de datos: {str(e)}"
         })
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Obtener la fecha objetivo desde el cuerpo de la solicitud
+    data = request.get_json()
+    fecha_str = data.get("fecha")
+
+    try:
+        fecha_objetivo = datetime.strptime(fecha_str, '%Y-%m-%d')
+    except (ValueError, TypeError):
+        return jsonify({"status": "error", "message": "Formato de fecha incorrecto. Use el formato YYYY-MM-DD."}), 400
+    
+    # Obtener las predicciones para la fecha solicitada
+    predicciones, status_code = predecir_para_fecha(fecha_objetivo)
+    
+    if isinstance(predicciones, dict) and 'status' in predicciones:
+        return jsonify(predicciones), status_code
+    
+    return jsonify({"fecha": fecha_objetivo.strftime('%Y-%m-%d'), "predicciones": {k: round(v, 2) for k, v in predicciones.items()}}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3001, debug=True)
