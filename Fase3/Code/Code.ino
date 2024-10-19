@@ -214,6 +214,8 @@ void loop() {
   Serial.print(lightValue);
   Serial.print(", MQ: ");
   Serial.print(mqValue);
+  Serial.print(", Distancia");
+  Serial.print(distance);
   Serial.println("");
 
   delay(500);  // Pausa para la siguiente lectura
