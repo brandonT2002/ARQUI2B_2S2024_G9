@@ -10,7 +10,7 @@ def obtener_datos():
     engine = create_engine('mysql+mysqlconnector://root:bGJ5AonEH9+M*#0n@34.46.189.38:3306/ace2')
     
     # Consulta para obtener los datos
-    query = "SELECT fecha, temperatura, humedad, luz, co2, proximidad FROM lecturas ORDER BY fecha"
+    query = "SELECT fecha, temperatura, humedad, luz, co2 FROM lecturas ORDER BY fecha"
     
     # Leer los datos directamente desde la base de datos usando el motor de SQLAlchemy
     df = pd.read_sql(query, engine)
@@ -52,7 +52,7 @@ def predecir_para_fecha(fecha_objetivo):
     
     # Hacer predicciones para cada variable
     predicciones = {}
-    for columna in ['temperatura', 'humedad', 'luz', 'co2', 'proximidad']:
+    for columna in ['temperatura', 'humedad', 'luz', 'co2']:
         predicciones[columna] = predecir_dato_serie_temporal(df[columna], dias).iloc[-1]  # Obtener la predicción del último día
 
     
@@ -68,8 +68,7 @@ def predicciones_a_json(predicciones, fecha_objetivo):
             'temperatura': round(predicciones['temperatura'], 2),
             'humedad': round(predicciones['humedad'], 2),
             'luz': round(predicciones['luz'], 2),
-            'co2': round(predicciones['co2'], 2),
-            'proximidad': round(predicciones['proximidad'], 2)
+            'co2': round(predicciones['co2'], 2)
         }
     }
     
