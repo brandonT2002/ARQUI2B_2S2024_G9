@@ -9,7 +9,6 @@ import { useState } from 'react';
 import Datepicker from "react-tailwindcss-datepicker";
 import ChartComponent from "../components/Chart";
 import { GiUltrasound } from "react-icons/gi";
-import { subDays } from "date-fns";
 import { MdDoNotDisturb } from "react-icons/md";
 import { useMain } from "../context/MainContext";
 
@@ -29,12 +28,6 @@ function Index() {
         endDate: null
     });
 
-    // const data = [];
-
-
-        // console.log(subDays(new Date(), num).toISOString().substr(0, 10))
-    
-
     const options = [
         { icon: <FaTemperatureEmpty />, id: 1, nombre: 'temperature' },
         { icon: <FaDroplet />, id: 2, nombre: 'humidity' },
@@ -49,10 +42,9 @@ function Index() {
 
     return (
         <div className='flex h-screen bg-background-light dark:bg-background-dark w-full items-center justify-center'>
-            <div className='flex w-10/12 h-full pt-4 flex-col gap-4 pb-5'>
+            <div className='flex w-[92%] h-full pt-4 flex-col gap-4 pb-5 ml-1'>
                 <div className="flex w-full justify-between h-10">
                     <h2 className="text-text-light dark:text-text-dark text-2xl font-bold">Busqueda</h2>
-                    <ThemeToggle />
                 </div>
                 <div className="flex gap-4 w-full flex-col h-full">
                     <div className="flex p-3 items-center justify-between w-full bg-panel_bg-light dark:bg-panel_bg-dark rounded-lg">

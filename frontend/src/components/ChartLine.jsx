@@ -4,33 +4,40 @@
 import PropTypes from 'prop-types';
 import {
     ResponsiveContainer,
-    AreaChart,
+    LineChart,
     XAxis,
     YAxis,
     Area,
     CartesianGrid,
+    Line,
+    Tooltip
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { useTheme } from "../context/ThemeContext";
 
-export const ChartComponent = ({data}) => {
+export const ChartLine = ({ data, color }) => {
     const { theme } = useTheme();
-    const colorPrimary = theme === 'dark' ? '#6366f1' : '#6366f1';
-    const colorFillStart = theme === 'dark' ? '#6366f1' : '#6366f1';
-    const colorFillEnd = theme === 'dark' ? '#6366f1' : '#6366f1';
-
+    let colorPrimary = theme === 'dark' ? color : color;
+    let colorFillStart = theme === 'dark' ? color : color;
+    let colorFillEnd = theme === 'dark' ? color : color;
+    let id_color = `color-${color}`;
     return (
         <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
+            <LineChart data={data} >
                 <defs>
-                    <linearGradient id="color" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id={id_color} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={colorFillStart} stopOpacity={0.6} />
                         <stop offset="80%" stopColor={colorFillEnd} stopOpacity={0.07} />
                     </linearGradient>
                 </defs>
-
-                <Area dataKey="value" stroke={colorPrimary} fill="url(#color)" />
-
+                <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#8c8c7d" />
+                <Area dataKey="value"
+                    stroke={colorPrimary}
+                    fill={`url(#${id_color})`}
+                    strokeLinejoin="round" // Suaviza las esquinas
+                    type="monotone" // Suaviza la línea
+                />
+                <YAxis />
                 <XAxis
                     dataKey="date"
                     axisLine={false}
@@ -43,26 +50,18 @@ export const ChartComponent = ({data}) => {
                         return "";
                     }}
                 />
-
-                <YAxis
-                    datakey="value"
-                    axisLine={false}
-                    tickLine={false}
-                    tickCount={8}
-                    tickFormatter={(number) => `${number.toFixed(2)}`}
-                />
-
-
-                <CartesianGrid opacity={0.1} vertical={false} stroke={theme === 'dark' ? '#ffffff' : '#000000'} />
-            </AreaChart>
+                <Line type="monotone" dataKey="value" stroke="#fff" activeDot={{ r: 8 }} />
+                <Tooltip content={<CustomTooltip />} />
+            </LineChart>
         </ResponsiveContainer>
     );
 };
 
-export default ChartComponent;
+export default ChartLine;
 
-ChartComponent.propTypes = {
+ChartLine.propTypes = {
     data: PropTypes.array.isRequired,
+    color: PropTypes.string.isRequired,
 };
 
 function CustomTooltip({ active, payload, label }) {
