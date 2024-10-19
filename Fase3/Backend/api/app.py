@@ -4,9 +4,8 @@ import pymysql
 from datetime import datetime
 from contextlib import contextmanager
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from statsmodels.tsa.arima.model import ARIMA
-import json
 
 # Configuración de Flask
 app = Flask(__name__)
@@ -21,19 +20,12 @@ DB_PASSWORD = 'bGJ5AonEH9+M*#0n'
 # Contexto de conexión a la base de datos
 @contextmanager
 def get_db_connection():
-    connection = None
+    engine = create_engine(f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+    connection = engine.connect()
     try:
-        connection = pymysql.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME
-        )
         yield connection
     finally:
-        if connection:
-            connection.close()
+        connection.close()
 
 # Ruta para obtener los datos de las diferentes columnas de la tabla 'lecturas'
 @app.route('/temperature', defaults={'limit': 25}, methods=['GET'])
@@ -65,23 +57,17 @@ def get_proximity(limit):
 def get_last_entries(column_name, limit):
     try:
         with get_db_connection() as connection:
-            cursor = connection.cursor()
-            
-            # Validar si el límite es 'all' para devolver todos los registros
             if limit == 'all':
                 query = f"SELECT {column_name}, fecha FROM lecturas ORDER BY fecha DESC;"
-                cursor.execute(query)
+                resultados = connection.execute(text(query)).fetchall()
             else:
-                # Convertir el límite a un número entero
                 try:
                     limit = int(limit)
                 except ValueError:
                     return jsonify({"status": "error", "message": "El límite debe ser un número o 'all'."}), 400
-                
-                query = f"SELECT {column_name}, fecha FROM lecturas ORDER BY fecha DESC LIMIT %s;"
-                cursor.execute(query, (limit,))
-            
-            resultados = cursor.fetchall()
+
+                query = f"SELECT {column_name}, fecha FROM lecturas ORDER BY fecha DESC LIMIT :limit;"
+                resultados = connection.execute(text(query), {"limit": limit}).fetchall()
 
             # Convertir los resultados a una lista de diccionarios con value como número y date en formato ISO
             datos = [{"value": float(row[0]), "date": row[1].isoformat()} for row in resultados]
@@ -90,22 +76,11 @@ def get_last_entries(column_name, limit):
     except Exception as e:
         return jsonify({"status": "error", "message": f"Error al obtener datos: {str(e)}"}), 500
 
-# Contexto de conexión a la base de datos
-@contextmanager
-def get_db_connection():
-    connection = None
-    try:
-        connection = create_engine(f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
-        yield connection
-    finally:
-        if connection:
-            connection.dispose()
-
 # Función para conectar a la base de datos y recuperar los datos
 def obtener_datos():
-    with get_db_connection() as engine:
+    with get_db_connection() as connection:
         query = "SELECT fecha, temperatura, humedad, luz, co2 FROM lecturas ORDER BY fecha"
-        df = pd.read_sql(query, engine)
+        df = pd.read_sql(query, connection)
     return df
 
 # Función para entrenar un modelo ARIMA y hacer predicciones
@@ -147,9 +122,9 @@ def index():
 def check_db_connection():
     try:
         with get_db_connection() as connection:
-            cursor = connection.cursor()
-            cursor.execute("SELECT VERSION();")
-            db_version = cursor.fetchone()
+            # Crear una conexión temporal para ejecutar una consulta
+            result = connection.execute("SELECT VERSION();")
+            db_version = result.fetchone()
             return jsonify({
                 "status": "success",
                 "message": "Conexión exitosa con la base de datos",
